@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Tabla de Datos</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Plataformas Digitales</h1>
+        
+        <!-- Controles de filtrado y ordenamiento -->
+        <div class="controls">
+            <div class="filter-form">
+                <div class="filter-group">
+                    <label for="pais">Filtrar por país:</label>
+                    <select id="pais">
+                        <option value="todos">Todos los países</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="ordenar_por">Ordenar por:</label>
+                    <select id="ordenar_por">
+                        <option value="nombre">Nombre</option>
+                        <option value="usuarios">Usuarios</option>
+                        <option value="fundado">Año de Fundación</option>
+                        <option value="pais">País</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="orden">Orden:</label>
+                    <select id="orden">
+                        <option value="asc">Ascendente</option>
+                        <option value="desc">Descendente</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información de resultados -->
+        <div class="results-info">
+            <p id="results-text">Mostrando todos los resultados | Ordenado por: <strong>Nombre</strong> (Ascendente)</p>
+        </div>
+
+        <table id="tabla-datos">
+            <thead>
+                <tr>
+                    <th>
+                        <span class="sort-link" data-column="nombre">
+                            Nombre
+                            <i class="fas fa-sort" id="sort-icon-nombre"></i>
+                        </span>
+                    </th>
+                    <th>
+                        <span class="sort-link" data-column="usuarios">
+                            Usuarios
+                            <i class="fas fa-sort" id="sort-icon-usuarios"></i>
+                        </span>
+                    </th>
+                    <th>
+                        <span class="sort-link" data-column="fundado">
+                            Año de Fundación
+                            <i class="fas fa-sort" id="sort-icon-fundado"></i>
+                        </span>
+                    </th>
+                    <th>
+                        <span class="sort-link" data-column="pais">
+                            País
+                            <i class="fas fa-sort" id="sort-icon-pais"></i>
+                        </span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body">
+                <!-- Los datos se llenarán con JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        // Datos de las plataformas (desde Python)
+        const datosOriginales = {{ datos | tojson }};
+        let datosFiltrados = [...datosOriginales];
+        let ordenActual = 'nombre';
+        let direccionActual = 'asc';
+        
+        // Inicializar la aplicación cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarApp();
+        });
+        
+        function inicializarApp() {
+            // Llenar el select de países
+            llenarSelectPaises();
+            
+            // Renderizar tabla inicial
+            renderizarTabla();
+            
+            // Configurar event listeners
+            configurarEventListeners();
+            
+            // Actualizar información de resultados
+            actualizarInfoResultados();
+        }
+        
+        function llenarSelectPaises() {
+            const paisSelect = document.getElementById('pais');
+            const paisesUnicos = [...new Set(datosOriginales.map(item => item.pais))].sort();
+            
+            // Limpiar opciones existentes (excepto "Todos")
+            while (paisSelect.children.length > 1) {
+                paisSelect.removeChild(paisSelect.lastChild);
+            }
+            
+            // Agregar países únicos
+            paisesUnicos.forEach(pais => {
+                const option = document.createElement('option');
+                option.value = pais;
+                option.textContent = pais;
+                paisSelect.appendChild(option);
+            });
+        }
+        
+        function configurarEventListeners() {
+            // Filtro por país
+            document.getElementById('pais').addEventListener('change', function() {
+                filtrarDatos();
+                renderizarTabla();
+                actualizarInfoResultados();
+            });
+            
+            // Cambio en ordenamiento
+            document.getElementById('ordenar_por').addEventListener('change', function() {
+                ordenActual = this.value;
+                ordenarDatos();
+                renderizarTabla();
+                actualizarInfoResultados();
+                actualizarIconoOrden();
+            });
+            
+            // Cambio en dirección
+            document.getElementById('orden').addEventListener('change', function() {
+                direccionActual = this.value;
+                ordenarDatos();
+                renderizarTabla();
+                actualizarInfoResultados();
+                actualizarIconoOrden();
+            });
+            
+            // Click en encabezados para ordenar
+            document.querySelectorAll('.sort-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    const columna = this.getAttribute('data-column');
+                    
+                    // Si es la misma columna, cambiar dirección
+                    if (ordenActual === columna) {
+                        direccionActual = direccionActual === 'asc' ? 'desc' : 'asc';
+                        document.getElementById('orden').value = direccionActual;
+                    } else {
+                        // Nueva columna, empezar ascendente
+                        ordenActual = columna;
+                        direccionActual = 'asc';
+                        document.getElementById('ordenar_por').value = columna;
+                        document.getElementById('orden').value = 'asc';
+                    }
+                    
+                    ordenarDatos();
+                    renderizarTabla();
+                    actualizarInfoResultados();
+                    actualizarIconoOrden();
+                });
+            });
+        }
+        
+        function filtrarDatos() {
+            const paisSeleccionado = document.getElementById('pais').value;
+            
+            if (paisSeleccionado === 'todos') {
+                datosFiltrados = [...datosOriginales];
+            } else {
+                datosFiltrados = datosOriginales.filter(item => item.pais === paisSeleccionado);
+            }
+            
+            ordenarDatos(); // Aplicar ordenamiento después del filtro
+        }
+        
+        function ordenarDatos() {
+            datosFiltrados.sort((a, b) => {
+                let valorA, valorB;
+                
+                switch (ordenActual) {
+                    case 'nombre':
+                        valorA = a.nombre.toLowerCase();
+                        valorB = b.nombre.toLowerCase();
+                        break;
+                    case 'usuarios':
+                        valorA = convertirUsuarios(a.usuarios);
+                        valorB = convertirUsuarios(b.usuarios);
+                        break;
+                    case 'fundado':
+                        valorA = parseInt(a.fundado);
+                        valorB = parseInt(b.fundado);
+                        break;
+                    case 'pais':
+                        valorA = a.pais.toLowerCase();
+                        valorB = b.pais.toLowerCase();
+                        break;
+                    default:
+                        valorA = a.nombre.toLowerCase();
+                        valorB = b.nombre.toLowerCase();
+                }
+                
+                if (valorA < valorB) {
+                    return direccionActual === 'asc' ? -1 : 1;
+                }
+                if (valorA > valorB) {
+                    return direccionActual === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        
+        function convertirUsuarios(usuariosStr) {
+            if (usuariosStr.endsWith('M')) {
+                return parseFloat(usuariosStr.slice(0, -1));
+            } else if (usuariosStr.endsWith('B')) {
+                return parseFloat(usuariosStr.slice(0, -1)) * 1000;
+            }
+            return parseFloat(usuariosStr);
+        }
+        
+        function renderizarTabla() {
+            const tbody = document.getElementById('tabla-body');
+            tbody.innerHTML = '';
+            
+            datosFiltrados.forEach(item => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${item.nombre}</td>
+                    <td>${item.usuarios}</td>
+                    <td>${item.fundado}</td>
+                    <td>${item.pais}</td>
+                `;
+                tbody.appendChild(fila);
+            });
+        }
+        
+        function actualizarInfoResultados() {
+            const paisSeleccionado = document.getElementById('pais').value;
+            const totalResultados = datosFiltrados.length;
+            const columnaTexto = obtenerTextoColumna(ordenActual);
+            const direccionTexto = direccionActual === 'asc' ? 'Ascendente' : 'Descendente';
+            
+            let texto = `Mostrando ${totalResultados} resultado(s)`;
+            
+            if (paisSeleccionado !== 'todos') {
+                texto += ` filtrados por país: <strong>${paisSeleccionado}</strong>`;
+            }
+            
+            texto += ` | Ordenado por: <strong>${columnaTexto}</strong> (${direccionTexto})`;
+            
+            document.getElementById('results-text').innerHTML = texto;
+        }
+        
+        function obtenerTextoColumna(columna) {
+            const textos = {
+                'nombre': 'Nombre',
+                'usuarios': 'Usuarios',
+                'fundado': 'Año de Fundación',
+                'pais': 'País'
+            };
+            return textos[columna] || 'Nombre';
+        }
+        
+        function actualizarIconoOrden() {
+            // Limpiar todos los iconos
+            document.querySelectorAll('[id^="sort-icon-"]').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+            
+            // Actualizar icono activo
+            const iconoActivo = document.getElementById(`sort-icon-${ordenActual}`);
+            if (iconoActivo) {
+                iconoActivo.className = `fas fa-sort-${direccionActual === 'asc' ? 'up' : 'down'}`;
+            }
+            
+            // Actualizar clases activas en los links
+            document.querySelectorAll('.sort-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const linkActivo = document.querySelector(`[data-column="${ordenActual}"]`);
+            if (linkActivo) {
+                linkActivo.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

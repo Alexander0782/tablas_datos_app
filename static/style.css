@@ -1,0 +1,229 @@
+/* Tema Oscuro Minimalista */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1a1a1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #2d2d2d;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #404040;
+}
+
+h1 {
+    background: #333333;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.8em;
+    font-weight: 400;
+    border-bottom: 1px solid #404040;
+}
+
+/* Controles de filtrado */
+.controls {
+    background: #363636;
+    padding: 20px;
+    border-bottom: 1px solid #404040;
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+}
+
+.filter-group label {
+    color: #b0b0b0;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    background: #404040;
+    color: #e0e0e0;
+    font-size: 0.9em;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+.filter-group select:hover {
+    border-color: #666666;
+    background: #4a4a4a;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #777777;
+    background: #4a4a4a;
+}
+
+/* Información de resultados */
+.results-info {
+    background: #3a3a3a;
+    padding: 12px 20px;
+    border-bottom: 1px solid #404040;
+}
+
+.results-info p {
+    color: #c0c0c0;
+    font-size: 0.9em;
+}
+
+.results-info strong {
+    color: #ffffff;
+}
+
+/* Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #2d2d2d;
+}
+
+thead {
+    background: #404040;
+}
+
+th {
+    padding: 0;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+.sort-link {
+    display: block;
+    padding: 15px 20px;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sort-link:hover {
+    background: #4a4a4a;
+    color: #ffffff;
+}
+
+.sort-link.active {
+    background: #555555;
+}
+
+.sort-link i {
+    margin-left: 5px;
+    font-size: 0.8em;
+}
+
+tbody tr {
+    border-bottom: 1px solid #404040;
+}
+
+tbody tr:hover {
+    background: #383838;
+}
+
+tbody tr:nth-child(even) {
+    background: #323232;
+}
+
+tbody tr:nth-child(even):hover {
+    background: #383838;
+}
+
+td {
+    padding: 12px 20px;
+    color: #e0e0e0;
+    font-size: 0.9em;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        border-radius: 4px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+        padding: 15px;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-group {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .filter-group select {
+        width: 100%;
+    }
+    
+    .sort-link {
+        padding: 12px 15px;
+    }
+    
+    td {
+        padding: 10px 15px;
+        font-size: 0.85em;
+    }
+    
+    .results-info {
+        padding: 10px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3em;
+        padding: 12px;
+    }
+    
+    .sort-link {
+        padding: 10px 12px;
+        font-size: 0.85em;
+    }
+    
+    td {
+        padding: 8px 12px;
+        font-size: 0.8em;
+    }
+}
+
+/* Campos ocultos */
+.filter-form input[type="hidden"] {
+    display: none;
+}
